@@ -1,0 +1,19 @@
+1. Landing Page
+a. As a user, I want to see product info, so I understand what the app offers.
+b. As a user, I want to access login/signup, so I can start using the app.
+2. User Authentication Page
+a. As a new user, I want to register, so I can create an account.
+b. As a returning user, I want to log in, so I can access my account.
+c. As a user, I want to reset my password, so I don’t lose access.
+3. Workspace Collaboration Dashboard
+a. As a user, I want to view my workspaces, so I can switch between them.
+b. As a user, I want to create a workspace, so I can organize projects.
+4. Rich Notes Page
+a. As a user, I want to create/edit tasks, so I can track work.
+b. As a user, I want to set due dates, so I don’t miss deadlines.
+c. As a user, I want to update task status, so I can track progress.
+d. As a user, I want to add comments, so I can share details with my team.
+5. Email Reminders
+a. As a user, I want to get reminders before tasks are due, so I can prepare.
+b. As a user, I want to get reminders after missed deadlines, so I don’t forget work.
+
