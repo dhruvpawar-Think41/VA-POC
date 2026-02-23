@@ -26,6 +26,17 @@ TOOLS = ToolsSchema(
             required=["difficulty"],
         ),
         FunctionSchema(
+            name="run_tests",
+            description=(
+                "Execute the candidate's code against the problem's test cases. "
+                "Call this when the candidate says they're done or when you want "
+                "to check if their solution works. Returns test results showing "
+                "which test cases passed or failed."
+            ),
+            properties={},
+            required=[],
+        ),
+        FunctionSchema(
             name="start_timer",
             description=(
                 "Start a countdown timer visible to the candidate. Call this "

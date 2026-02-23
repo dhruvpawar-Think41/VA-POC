@@ -26,6 +26,16 @@ PROBLEMS = [
             "For each number, check if (target - number) exists in your hash map before inserting the current number.",
         ],
         "follow_up": "Can you solve it in one pass through the array?",
+        "starter_code": {
+            "python": "def two_sum(nums, target):\n    # Write your code here\n    pass",
+            "javascript": "function twoSum(nums, target) {\n    // Write your code here\n}",
+        },
+        "test_cases": [
+            {"input": {"nums": [2, 7, 11, 15], "target": 9}, "expected": [0, 1]},
+            {"input": {"nums": [3, 2, 4], "target": 6}, "expected": [1, 2]},
+            {"input": {"nums": [3, 3], "target": 6}, "expected": [0, 1]},
+            {"input": {"nums": [1, 5, 3, 7, 9], "target": 12}, "expected": [2, 4]},
+        ],
     },
     {
         "id": "valid-anagram",
@@ -47,6 +57,16 @@ PROBLEMS = [
             "You can use a single hash map: increment for s, decrement for t, then check all counts are zero.",
         ],
         "follow_up": "What if the inputs contain Unicode characters? How does that affect your approach?",
+        "starter_code": {
+            "python": "def is_anagram(s, t):\n    # Write your code here\n    pass",
+            "javascript": "function isAnagram(s, t) {\n    // Write your code here\n}",
+        },
+        "test_cases": [
+            {"input": {"s": "anagram", "t": "nagaram"}, "expected": True},
+            {"input": {"s": "rat", "t": "car"}, "expected": False},
+            {"input": {"s": "listen", "t": "silent"}, "expected": True},
+            {"input": {"s": "hello", "t": "world"}, "expected": False},
+        ],
     },
     {
         "id": "max-subarray",
@@ -68,6 +88,16 @@ PROBLEMS = [
             "Keep track of the current sum. If it drops below zero, reset it. Track the maximum sum seen so far.",
         ],
         "follow_up": "Can you also return the start and end indices of the maximum subarray?",
+        "starter_code": {
+            "python": "def max_subarray(nums):\n    # Write your code here\n    pass",
+            "javascript": "function maxSubarray(nums) {\n    // Write your code here\n}",
+        },
+        "test_cases": [
+            {"input": {"nums": [-2, 1, -3, 4, -1, 2, 1, -5, 4]}, "expected": 6},
+            {"input": {"nums": [5, 4, -1, 7, 8]}, "expected": 23},
+            {"input": {"nums": [1]}, "expected": 1},
+            {"input": {"nums": [-1, -2, -3]}, "expected": -1},
+        ],
     },
     {
         "id": "invert-binary-tree",
@@ -109,6 +139,16 @@ PROBLEMS = [
             "You can optimize space by only keeping track of the last two values instead of a full array.",
         ],
         "follow_up": "What if you could climb 1, 2, or 3 steps at a time?",
+        "starter_code": {
+            "python": "def climb_stairs(n):\n    # Write your code here\n    pass",
+            "javascript": "function climbStairs(n) {\n    // Write your code here\n}",
+        },
+        "test_cases": [
+            {"input": {"n": 2}, "expected": 2},
+            {"input": {"n": 3}, "expected": 3},
+            {"input": {"n": 4}, "expected": 5},
+            {"input": {"n": 5}, "expected": 8},
+        ],
     },
 ]
 
