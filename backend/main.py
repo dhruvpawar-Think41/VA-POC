@@ -106,6 +106,7 @@ async def run_bot(webrtc_connection, pc_id: str) -> None:
         "hints_given": 0,
         "language": "python",  # Default language
     }
+    logger.info(f"🆕 New session created for pc_id: {pc_id}")
 
     # -- Transport --------------------------------------------------------
     transport = SmallWebRTCTransport(
@@ -180,11 +181,11 @@ async def run_bot(webrtc_connection, pc_id: str) -> None:
     # -- Transport events -------------------------------------------------
     @transport.event_handler("on_client_connected")
     async def on_connected(transport, client):
-        logger.info("Client connected")
+        logger.info(f"✅ Client connected - pc_id: {pc_id}")
 
     @transport.event_handler("on_client_disconnected")
     async def on_disconnected(transport, client):
-        logger.info("Client disconnected")
+        logger.info(f"❌ Client disconnected - pc_id: {pc_id}")
         review_queues.pop(pc_id, None)
         await task.cancel()
 

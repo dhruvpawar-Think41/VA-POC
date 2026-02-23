@@ -31,6 +31,8 @@ def make_select_problem_handler(webrtc_connection, session: dict):
         session["current_problem"] = problem
         session["hints_given"] = 0
 
+        logger.info(f"✅ Problem selected: {problem['title']} - Session state: {session}")
+
         webrtc_connection.send_app_message({
             "type": "problem",
             "id": problem["id"],
@@ -154,6 +156,7 @@ def make_run_tests_handler(webrtc_connection, session: dict, code_store: dict, p
     """Return a handler that executes code against test cases."""
 
     async def handle(params):
+        logger.info(f"🧪 run_tests called - Session state: {session}")
         problem = session.get("current_problem")
 
         if not problem:
