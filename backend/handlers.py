@@ -13,6 +13,7 @@ import logging
 from typing import Any
 
 from problems import PROBLEMS, get_problems_by_difficulty
+from code_runner import run_tests as execute_tests
 
 logger = logging.getLogger("voice-poc")
 
@@ -30,6 +31,8 @@ def make_select_problem_handler(webrtc_connection, session: dict):
         session["current_problem"] = problem
         session["hints_given"] = 0
 
+        logger.info(f"✅ Problem selected: {problem['title']} - Session state: {session}")
+
         webrtc_connection.send_app_message({
             "type": "problem",
             "id": problem["id"],
@@ -37,6 +40,7 @@ def make_select_problem_handler(webrtc_connection, session: dict):
             "difficulty": problem["difficulty"],
             "description": problem["description"],
             "examples": problem["examples"],
+            "starter_code": problem.get("starter_code", {}),
         })
 
         problem_text = (
@@ -148,9 +152,98 @@ def make_review_code_handler(code_store: dict, pc_id: str):
     return handle
 
 
+def make_run_tests_handler(webrtc_connection, session: dict, code_store: dict, pc_id: str, language_store: dict):
+    """Return a handler that executes code against test cases."""
+
+    async def handle(params):
+        logger.info(f"🧪 run_tests called - Session state: {session}")
+        problem = session.get("current_problem")
+
+        if not problem:
+            await params.result_callback({
+                "status": "error",
+                "message": "No problem selected yet. Please select a problem first.",
+            })
+            return
+
+        code = code_store.get(pc_id, "")
+        if not code or not code.strip():
+            await params.result_callback({
+                "status": "error",
+                "message": "No code submitted yet. The candidate needs to write some code first.",
+            })
+            return
+
+        test_cases = problem.get("test_cases")
+        if not test_cases:
+            await params.result_callback({
+                "status": "error",
+                "message": "No test cases available for this problem.",
+            })
+            return
+
+        # Get language from language store (default to python)
+        language = language_store.get(pc_id, "python")
+
+        logger.info(f"Running tests for problem {problem['id']} with {len(test_cases)} test cases")
+
+        # Execute tests
+        result = await execute_tests(code, language, test_cases, timeout_per_test=5)
+
+        # Send results to frontend
+        webrtc_connection.send_app_message({
+            "type": "test_results",
+            "success": result.success,
+            "total": result.total_tests,
+            "passed": result.passed_tests,
+            "failed": result.failed_tests,
+            "results": [
+                {
+                    "passed": tr.passed,
+                    "input": tr.input,
+                    "expected": tr.expected,
+                    "actual": tr.actual,
+                    "error": tr.error,
+                    "execution_time_ms": tr.execution_time_ms,
+                }
+                for tr in result.test_results
+            ],
+        })
+
+        # Return summary to LLM
+        if result.success:
+            summary = f"All {result.total_tests} test cases passed! The solution is correct."
+        else:
+            summary = (
+                f"{result.passed_tests}/{result.total_tests} test cases passed. "
+                f"{result.failed_tests} failed. "
+            )
+            # Add details about first failure
+            first_failure = next((tr for tr in result.test_results if not tr.passed), None)
+            if first_failure:
+                summary += (
+                    f"First failure: Input {first_failure.input} "
+                    f"expected {first_failure.expected} but got {first_failure.actual}. "
+                )
+                if first_failure.error:
+                    summary += f"Error: {first_failure.error}"
+
+        await params.result_callback({
+            "status": "ok",
+            "success": result.success,
+            "total_tests": result.total_tests,
+            "passed_tests": result.passed_tests,
+            "failed_tests": result.failed_tests,
+            "summary": summary,
+        })
+
+    return handle
+
+
 def register_all_handlers(
     llm, webrtc_connection, session: dict,
     code_store: dict | None = None, pc_id: str | None = None,
+    language_store: dict | None = None,
 ) -> None:
     """Register every tool handler on the LLM service."""
     llm.register_function(
@@ -174,3 +267,8 @@ def register_all_handlers(
             "review_code",
             make_review_code_handler(code_store, pc_id),
         )
+        if language_store is not None:
+            llm.register_function(
+                "run_tests",
+                make_run_tests_handler(webrtc_connection, session, code_store, pc_id, language_store),
+            )

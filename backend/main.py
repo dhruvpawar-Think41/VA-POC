@@ -73,6 +73,9 @@ webrtc_handler = SmallWebRTCRequestHandler()
 # Per-session code storage: pc_id → latest code string
 code_store: dict[str, str] = {}
 
+# Per-session language tracking: pc_id → language
+language_store: dict[str, str] = {}
+
 # Per-session review request queues: pc_id → asyncio.Queue
 review_queues: dict[str, asyncio.Queue] = {}
 
@@ -80,6 +83,7 @@ review_queues: dict[str, asyncio.Queue] = {}
 class CodePayload(BaseModel):
     pc_id: str
     code: str
+    language: str = "python"  # Optional language field
 
 
 class ReviewPayload(BaseModel):
@@ -100,7 +104,9 @@ async def run_bot(webrtc_connection, pc_id: str) -> None:
     session: dict = {
         "current_problem": None,
         "hints_given": 0,
+        "language": "python",  # Default language
     }
+    logger.info(f"🆕 New session created for pc_id: {pc_id}")
 
     # -- Transport --------------------------------------------------------
     transport = SmallWebRTCTransport(
@@ -128,7 +134,7 @@ async def run_bot(webrtc_connection, pc_id: str) -> None:
     )
 
     # -- Register function-call handlers ----------------------------------
-    register_all_handlers(llm, webrtc_connection, session, code_store, pc_id)
+    register_all_handlers(llm, webrtc_connection, session, code_store, pc_id, language_store)
 
     # -- Context (required for function calling) --------------------------
     context = LLMContext()
@@ -175,11 +181,11 @@ async def run_bot(webrtc_connection, pc_id: str) -> None:
     # -- Transport events -------------------------------------------------
     @transport.event_handler("on_client_connected")
     async def on_connected(transport, client):
-        logger.info("Client connected")
+        logger.info(f"✅ Client connected - pc_id: {pc_id}")
 
     @transport.event_handler("on_client_disconnected")
     async def on_disconnected(transport, client):
-        logger.info("Client disconnected")
+        logger.info(f"❌ Client disconnected - pc_id: {pc_id}")
         review_queues.pop(pc_id, None)
         await task.cancel()
 
@@ -219,8 +225,9 @@ async def offer(request: SmallWebRTCRequest, background_tasks: BackgroundTasks):
 
 @app.post("/api/code")
 async def receive_code(payload: CodePayload):
-    """Store the candidate's latest code, keyed by pc_id."""
+    """Store the candidate's latest code and language, keyed by pc_id."""
     code_store[payload.pc_id] = payload.code
+    language_store[payload.pc_id] = payload.language
     return {"status": "ok"}
 
 
